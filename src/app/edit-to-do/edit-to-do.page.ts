@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
+import { NavController } from '@ionic/angular';
 import { ActivatedRoute} from '@angular/router';
-import { Todo } from'../interfaces/todo';
+import { Todo } from '../interfaces/todo';
+import { ToDoService} from '../services/to-do.service';
 
 @Component({
   selector: 'app-edit-to-do',
@@ -10,11 +12,12 @@ import { Todo } from'../interfaces/todo';
 export class EditToDoPage implements OnInit {
 
   private todo: Todo;
+  private editMode: boolean = false;
 
-  constructor(private route: ActivatedRoute) {
+  constructor(private route: ActivatedRoute, private todoService: ToDoService, private navCtrl: NavController) {
 
     this.todo = {
-      id: 0,
+      id: this.todoService.todos.length,
       title: '',
       description: ''
     };
@@ -22,11 +25,24 @@ export class EditToDoPage implements OnInit {
 
   ngOnInit() {
     let id = this.route.snapshot.paramMap.get('id');
-    console.log(id);
+
+    if(id != null){
+      this.todoService.load().then(() => {
+        this.editMode = true;
+        this.todo = this.todoService.getTodo(id);
+      });
+    }
   }
 
   saveToDo(){
+    if(this.editMode){
+      this.todoService.save()
+    }
+    else{
+      this.todoService.addTodo(this.todo);
+    }
 
+    this.navCtrl.back('/home');
   }
 
 }
